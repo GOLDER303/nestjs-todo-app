@@ -1,25 +1,26 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
-import { todosData } from './todos-mock';
-import { TodoDTO } from './dtos/todo.dto';
+import { Todo } from '@prisma/client';
+import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateTodoDTO } from './dtos/createTodo.dto';
 
 @Controller('todos')
 export class TodosController {
+  constructor(private prisma: PrismaService) {}
+
   @Get()
-  getTodos(): TodoDTO[] {
-    return todosData;
+  async getTodos(): Promise<Todo[]> {
+    const todos = await this.prisma.todo.findMany();
+    return todos;
   }
 
   @Post()
-  createTodo(@Body() createTodoDTO: CreateTodoDTO): TodoDTO {
-    const newTodoDTO: TodoDTO = {
-      id: todosData.length + 1,
-      title: createTodoDTO.title,
-      status: 'inProgress',
-    };
+  async createTodo(@Body() createTodoDTO: CreateTodoDTO): Promise<Todo> {
+    const createdTodo = await this.prisma.todo.create({
+      data: {
+        content: createTodoDTO.content,
+      },
+    });
 
-    todosData.push(newTodoDTO);
-
-    return newTodoDTO;
+    return createdTodo;
   }
 }
