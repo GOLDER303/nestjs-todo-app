@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
 import { todosData } from './todos-mock';
-import { TodoDTO } from './todo.dto';
-import { CreateTodoDTO } from './createTodo.dto';
+import { TodoDTO } from './dtos/todo.dto';
+import { CreateTodoDTO } from './dtos/createTodo.dto';
 
 @Controller('todos')
 export class TodosController {

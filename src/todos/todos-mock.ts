@@ -1,4 +1,4 @@
-import { TodoDTO } from './todo.dto';
+import { TodoDTO } from './dtos/todo.dto';
 
 export const todosData: TodoDTO[] = [
   { id: 1, title: 'Buy groceries', status: 'done' },
