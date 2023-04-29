@@ -9,3 +9,15 @@ datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
 }
+
+model Todo {
+  id      Int        @id @default(autoincrement())
+  content String
+  status  TodoStatus @default(TODO)
+}
+
+enum TodoStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+}
