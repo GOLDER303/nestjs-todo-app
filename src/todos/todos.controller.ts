@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
 import { Todo } from '@prisma/client';
 import { CreateTodoDTO } from './dtos/createTodo.dto';
 import { TodosService } from './todos.service';
@@ -15,5 +15,10 @@ export class TodosController {
   @Post()
   async createTodo(@Body() createTodoDTO: CreateTodoDTO): Promise<Todo> {
     return this.todosService.createTodo(createTodoDTO);
+  }
+
+  @Delete(':id')
+  async deleteTodo(@Param('id') id: string) {
+    return this.todosService.deleteTodo(parseInt(id));
   }
 }

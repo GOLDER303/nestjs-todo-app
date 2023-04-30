@@ -21,4 +21,14 @@ export class TodosService {
 
     return createdTodo;
   }
+
+  async deleteTodo(todoId: number): Promise<Todo> {
+    const deletedTodo = await this.prisma.todo.delete({
+      where: {
+        id: todoId,
+      },
+    });
+
+    return deletedTodo;
+  }
 }
