@@ -40,7 +40,7 @@ export class TodosService {
         throw new NotFoundException(`Todo with id ${todoId} not found`);
       }
       throw new InternalServerErrorException(
-        'Something wen wrong try again later',
+        'Something went wrong try again later',
       );
     }
   }
