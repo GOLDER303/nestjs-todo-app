@@ -1,5 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { Todo } from '@prisma/client';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateTodoDTO } from './dtos/createTodo.dto';
 
@@ -23,12 +28,24 @@ export class TodosService {
   }
 
   async deleteTodo(todoId: number): Promise<Todo> {
-    const deletedTodo = await this.prisma.todo.delete({
-      where: {
-        id: todoId,
-      },
-    });
+    try {
+      const deletedTodo = await this.prisma.todo.delete({
+        where: {
+          id: todoId,
+        },
+      });
 
-    return deletedTodo;
+      return deletedTodo;
+    } catch (error) {
+      if (error instanceof PrismaClientKnownRequestError) {
+        if (error.code === 'P2025') {
+          throw new NotFoundException(`Todo with id ${todoId} not found`);
+        }
+      } else {
+        throw new InternalServerErrorException(
+          'Something wen wrong try again later',
+        );
+      }
+    }
   }
 }
