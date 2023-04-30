@@ -1,11 +1,13 @@
 import {
+  BadRequestException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { Todo } from '@prisma/client';
+import { Prisma, Todo } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateTodoDTO } from './dtos/createTodo.dto';
+import { UpdateTodoDTO } from './dtos/updateTodo.dto';
 
 @Injectable()
 export class TodosService {
@@ -39,6 +41,31 @@ export class TodosService {
       if (error.code === 'P2025') {
         throw new NotFoundException(`Todo with id ${todoId} not found`);
       }
+      throw new InternalServerErrorException(
+        'Something went wrong try again later',
+      );
+    }
+  }
+
+  async patchTodo(todoId: number, updateTodoDTO: UpdateTodoDTO) {
+    try {
+      const updatedTodo = await this.prisma.todo.update({
+        where: { id: todoId },
+        data: {
+          ...updateTodoDTO,
+        },
+      });
+
+      return updatedTodo;
+    } catch (error) {
+      if (error.code === 'P2025') {
+        throw new NotFoundException(`Todo with id ${todoId} not found`);
+      }
+
+      if (error instanceof Prisma.PrismaClientValidationError) {
+        throw new BadRequestException('Request body is wrong');
+      }
+
       throw new InternalServerErrorException(
         'Something went wrong try again later',
       );
