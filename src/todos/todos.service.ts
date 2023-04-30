@@ -4,7 +4,6 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Todo } from '@prisma/client';
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateTodoDTO } from './dtos/createTodo.dto';
 
@@ -37,15 +36,12 @@ export class TodosService {
 
       return deletedTodo;
     } catch (error) {
-      if (error instanceof PrismaClientKnownRequestError) {
-        if (error.code === 'P2025') {
-          throw new NotFoundException(`Todo with id ${todoId} not found`);
-        }
-      } else {
-        throw new InternalServerErrorException(
-          'Something wen wrong try again later',
-        );
+      if (error.code === 'P2025') {
+        throw new NotFoundException(`Todo with id ${todoId} not found`);
       }
+      throw new InternalServerErrorException(
+        'Something wen wrong try again later',
+      );
     }
   }
 }
