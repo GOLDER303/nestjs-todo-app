@@ -9,7 +9,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { Todo } from '@prisma/client';
-import { AccessTokenGuard } from './../auth/guards/accessToken.guard';
+import { AccessTokenGuard } from '../common/guards/accessToken.guard';
 import { GetUserId } from './../common/decorators/getUserId.decorator';
 import { CreateTodoDTO } from './dtos/createTodo.dto';
 import { UpdateTodoDTO } from './dtos/updateTodo.dto';
