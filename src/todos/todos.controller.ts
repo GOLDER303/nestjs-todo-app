@@ -10,6 +10,7 @@ import {
 } from '@nestjs/common';
 import { Todo } from '@prisma/client';
 import { AccessTokenGuard } from './../auth/guards/accessToken.guard';
+import { GetUserId } from './../common/decorators/getUserId.decorator';
 import { CreateTodoDTO } from './dtos/createTodo.dto';
 import { UpdateTodoDTO } from './dtos/updateTodo.dto';
 import { TodosService } from './todos.service';
@@ -20,14 +21,17 @@ export class TodosController {
 
   @UseGuards(AccessTokenGuard)
   @Get()
-  async getTodos(): Promise<Todo[]> {
-    return this.todosService.getAllTodos();
+  async getTodos(@GetUserId() userId: number): Promise<Todo[]> {
+    return this.todosService.getAllTodos(userId);
   }
 
   @UseGuards(AccessTokenGuard)
   @Post()
-  async createTodo(@Body() createTodoDTO: CreateTodoDTO): Promise<Todo> {
-    return this.todosService.createTodo(createTodoDTO);
+  async createTodo(
+    @Body() createTodoDTO: CreateTodoDTO,
+    @GetUserId() userId: number,
+  ): Promise<Todo> {
+    return this.todosService.createTodo(createTodoDTO, userId);
   }
 
   @UseGuards(AccessTokenGuard)

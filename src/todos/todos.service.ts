@@ -13,14 +13,22 @@ import { UpdateTodoDTO } from './dtos/updateTodo.dto';
 export class TodosService {
   constructor(private prisma: PrismaService) {}
 
-  async getAllTodos(): Promise<Todo[]> {
-    const todos = await this.prisma.todo.findMany();
+  async getAllTodos(userId: number): Promise<Todo[]> {
+    const todos = await this.prisma.todo.findMany({
+      where: {
+        userId,
+      },
+    });
     return todos;
   }
 
-  async createTodo(createTodoDTO: CreateTodoDTO): Promise<Todo> {
+  async createTodo(
+    createTodoDTO: CreateTodoDTO,
+    userId: number,
+  ): Promise<Todo> {
     const createdTodo = await this.prisma.todo.create({
       data: {
+        userId,
         content: createTodoDTO.content,
       },
     });
