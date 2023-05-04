@@ -9,10 +9,10 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { Todo } from '@prisma/client';
-import { AccessTokenGuard } from '../common/guards/accessToken.guard';
-import { GetUserId } from './../common/decorators/getUserId.decorator';
-import { CreateTodoDTO } from './dtos/createTodo.dto';
-import { UpdateTodoDTO } from './dtos/updateTodo.dto';
+import { AccessTokenGuard } from '../common/guards/access-token.guard';
+import { GetUserId } from '../common/decorators/get-user-id.decorator';
+import { CreateTodoDTO } from './dtos/create-todo.dto';
+import { UpdateTodoDTO } from './dtos/update-todo.dto';
 import { TodosService } from './todos.service';
 
 @Controller('todos')

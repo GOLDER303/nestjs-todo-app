@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { PrismaModule } from 'src/prisma/prisma.module';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { AccessTokenStrategy } from './strategies/accessToken.strategy';
+import { AccessTokenStrategy } from './strategies/access-token.strategy';
 import { JwtModule } from '@nestjs/jwt';
 
 @Module({
