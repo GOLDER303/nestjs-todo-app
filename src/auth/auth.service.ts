@@ -2,10 +2,11 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { RefreshTokensDTO } from './dtos/refresh-token.dto';
+import { SignInResponseDTO } from './dtos/sign-in-response.dto';
 import { SignInDTO } from './dtos/sign-in.dto';
-import { SignInResponseDTO } from './dtos/signIn-response.dto';
-import { SignUpDTO } from './dtos/sign-up.dto';
 import { SignUpResponseDTO } from './dtos/sign-up-response.dto';
+import { SignUpDTO } from './dtos/sign-up.dto';
 
 @Injectable()
 export class AuthService {
@@ -20,8 +21,8 @@ export class AuthService {
         password: hashedPassword,
       },
     });
-    const accessToken = this.generateAccessToken(newUser.id, newUser.email);
-    return { accessToken };
+    const tokens = await this.generateTokens(newUser.id, newUser.email);
+    return tokens;
   }
 
   async singIn(signInDTO: SignInDTO): Promise<SignInResponseDTO> {
@@ -44,24 +45,79 @@ export class AuthService {
       throw new UnauthorizedException('Access denied');
     }
 
-    const accessToken = this.generateAccessToken(user.id, user.email);
-    return { accessToken };
+    const tokens = await this.generateTokens(user.id, user.email);
+    await this.updateUserHashedRefreshToken(user.id, tokens.refreshToken);
+
+    return tokens;
   }
 
   async hashData(data: string) {
     return await bcrypt.hash(data, 10);
   }
 
-  generateAccessToken(userId: number, email: string) {
-    return this.jwtService.sign(
-      {
-        sub: userId,
-        email,
-      },
-      {
+  async generateTokens(userId: number, email: string) {
+    const jwtPayload = {
+      sub: userId,
+      email,
+    };
+
+    const [accessToken, refreshToken] = await Promise.all([
+      this.jwtService.signAsync(jwtPayload, {
         secret: 'access_token_secret',
         expiresIn: 15 * 60,
-      },
+      }),
+      this.jwtService.signAsync(jwtPayload, {
+        secret: 'refresh_token_secret',
+        expiresIn: 60 * 60 * 24 * 7,
+      }),
+    ]);
+
+    return {
+      accessToken,
+      refreshToken,
+    };
+  }
+
+  async refreshTokens(
+    refreshTokensDTO: RefreshTokensDTO,
+  ): Promise<SignInResponseDTO> {
+    try {
+      this.jwtService.verify(refreshTokensDTO.refreshToken, {
+        secret: 'refresh_token_secret',
+      });
+    } catch {
+      throw new UnauthorizedException();
+    }
+
+    const refreshTokenData = this.jwtService.decode(
+      refreshTokensDTO.refreshToken,
     );
+
+    const userId = refreshTokenData.sub;
+
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+
+    if (!user || !user.hashedRefreshToken) {
+      throw new UnauthorizedException();
+    }
+
+    if (
+      !bcrypt.compare(refreshTokensDTO.refreshToken, user.hashedRefreshToken)
+    ) {
+      throw new UnauthorizedException();
+    }
+
+    const tokens = await this.generateTokens(user.id, user.email);
+    await this.updateUserHashedRefreshToken(user.id, tokens.refreshToken);
+
+    return tokens;
+  }
+
+  async updateUserHashedRefreshToken(userId: number, refreshToken: string) {
+    const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { hashedRefreshToken },
+    });
   }
 }
