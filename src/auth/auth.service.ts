@@ -63,11 +63,11 @@ export class AuthService {
 
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(jwtPayload, {
-        secret: 'access_token_secret',
+        secret: process.env.ACCESS_TOKEN_SECRET,
         expiresIn: 15 * 60,
       }),
       this.jwtService.signAsync(jwtPayload, {
-        secret: 'refresh_token_secret',
+        secret: process.env.REFRESH_TOKEN_SECRET,
         expiresIn: 60 * 60 * 24 * 7,
       }),
     ]);
@@ -83,7 +83,7 @@ export class AuthService {
   ): Promise<SignInResponseDTO> {
     try {
       this.jwtService.verify(refreshTokensDTO.refreshToken, {
-        secret: 'refresh_token_secret',
+        secret: process.env.REFRESH_TOKEN_SECRET,
       });
     } catch {
       throw new UnauthorizedException();
